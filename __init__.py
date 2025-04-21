@@ -10,17 +10,17 @@ if current_dir not in sys.path:
 # Import the node class
 from iclight_fal_node import IcLightV2Node
 
-# Register as a ComfyUI Node
+# Register as a ComfyUI Node with proper categorization
 NODE_CLASS_MAPPINGS = {
-    "IcLightV2 (fal.ai)": IcLightV2Node
+    "ICLightV2": IcLightV2Node
 }
 
-# Provide category info for UI
+# Provide category info for UI with proper naming convention
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "IcLightV2 (fal.ai)": "IcLightV2 (fal.ai)"
+    "ICLightV2": "IC-Light V2 (fal.ai)"
 }
 
 # Optional icons for the node
 WEB_DIRECTORY = "./web"
 
-__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS', 'WEB_DIRECTORY'] 
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS', 'WEB_DIRECTORY']

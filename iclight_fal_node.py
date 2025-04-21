@@ -18,15 +18,15 @@ from comfy.model_management import get_torch_device
 try:
     import fal_client
 except ImportError:
-    print("Warning: fal_client not installed, IcLightV2Node will not work")
-    print("Please install with: pip install fal-client")
+    print("Warning: fal_client not installed!")
+    print("Please install dependencies with: pip install -r requirements.txt")
 
 # Model ID for IClightV2 on fal.ai
 IC_LIGHT_V2_MODEL_ID = "fal-ai/iclight-v2"
 
 class IcLightV2Node:
     """
-    ComfyUI node for relighting images using fal.ai's IClightV2 model
+    ComfyUI node for changing background and relighting images using lllyasviel's IC-Light model, powered by fal.ai's API.
     """
     
     def __init__(self):
@@ -175,7 +175,7 @@ class IcLightV2Node:
     def relight(self, image, prompt, negative_prompt, num_inference_steps, guidance_scale, seed, 
                 initial_latent, enable_hr_fix, lowres_denoise, highres_denoise, hr_downscale, 
                 num_images, cfg, output_format, mask=None):
-        """Relight images using fal.ai's IClightV2 model"""
+        """Process input image and return generated images."""
         
         if not self.api_key:
             raise ValueError("No FAL API key found. Please set it in config.ini or as FAL_KEY environment variable.")

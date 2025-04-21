@@ -108,3 +108,7 @@ config.ini
 .DS_Store
 Thumbs.db 
 .cursorrules
+
+# IDE specific
+.idea/
+.vscode/

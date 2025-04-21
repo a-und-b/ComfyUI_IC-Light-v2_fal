@@ -1,33 +1,41 @@
-# ComfyUI-IC-Light-v2-fal
+# ComfyUI_IC-Light-v2_fal
 
-Custom node for ComfyUI to integrate the fal.ai IClightV2 API - a powerful image relighting and background replacement tool.
+Custom node for [ComfyUI](https://github.com/comfyanonymous/ComfyUI) that integrates [lllyasviel's IC-Light V2 model](https://github.com/lllyasviel/IC-Light/discussions/98) into your workflows using the [fal.ai API](https://fal.ai/models/fal-ai/iclight-v2/api).
+
+![Example Workflow](example_workflows/iclv2-example-workflow.png)
 
 ## Features
 
-* Image relighting using fal.ai's IClightV2 model
-* Change lighting conditions of objects in your images
-* Optional mask support for targeted effects
-* Customizable generation parameters (lighting direction, denoise strength, etc.)
+* Re-lighting photos and changing their backgrounds based on a given description
+* Use your own native ComfyUI mask as input (optional)
+* Adjustable generation parameters (seed, lighting direction, denoise strength, etc.)
 * Multiple image generation in a single request
-* Seed support for reproducible results
 
 ## Prerequisites
 
 * ComfyUI installed and set up
-* Python 3.7+
-* A fal.ai API key with access to the IClightV2 model
+* fal.ai account and API key
 
 ## Installation
+You can install this custom node using the ComfyUI Manager or manually.
+
+### Install via ComfyUI Manager
+1. Install [ComfyUI Manager](https://github.com/Comfy-Org/ComfyUI-Manager) if you haven't already.
+2. Open ComfyUI and click the "Manager" button.
+3. Search for "ComfyUI_IC-Light-v2_fal" in the custom nodes section.
+4. Click "Install" to automatically download and install the custom nodes.
+
+### Install manually
 
 1. Clone this repository into your ComfyUI's `custom_nodes` directory:
 ```
 cd /path/to/ComfyUI/custom_nodes
-git clone https://github.com/yourusername/ComfyUI-IC-Light-v2-fal.git
+git clone https://github.com/a-und-b/ComfyUI_IC-Light-v2_fal.git
 ```
 
 2. Navigate to the cloned directory:
 ```
-cd ComfyUI-IC-Light-v2-fal
+cd ComfyUI_IC-Light-v2_fal
 ```
 
 3. Install the required dependencies:
@@ -36,14 +44,14 @@ pip install -r requirements.txt
 ```
 
 4. Configure your API key:
-   - Copy `config.ini.template` to `config.ini`
-   - Add your fal.ai API key to the `config.ini` file
-
+   - Copy `config.ini.template` to `config.ini` in the root directory of this custom node (`ComfyUI/custom_nodes/ComfyUI_IC-Light-v2_fal`).
+   - Add your [fal.ai API key](https://fal.ai/dashboard/keys) to the `config.ini` file 
+   
 5. Restart ComfyUI if it's already running
 
 ## Usage
 
-After installation, you'll find the "IClightV2 (fal.ai)" node in the ComfyUI interface under the "image effects/lighting" category. Connect an input image to relight or change its background based on your prompt.
+After installation, you'll find the "IC-Light V2 (fal.ai)" node in the ComfyUI interface. Connect an input image and an optional mask to change the subject's background and lighting based on your prompt.
 
 ### Parameters
 
@@ -65,18 +73,18 @@ After installation, you'll find the "IClightV2 (fal.ai)" node in the ComfyUI int
 
 ## Example Workflow
 
-The basic workflow for using the IClightV2 node:
+You can load the JSON file from the `example_workflows` folder directly into ComfyUI (e.g., by dragging and dropping the file onto the ComfyUI window or using the 'Load' button).
 
-1. Load an image using a ComfyUI image loader node
-2. Connect the image to the IClightV2 node
-3. Set your prompt and parameters
-4. Connect the output to a Preview or Save node
+This workflow incorporates custom nodes from the following widely used extension packages:
+* [ComfyUI-Easy-Use](https://github.com/yolain/ComfyUI-Easy-Use)
+* [ComfyUI-KJNodes](https://github.com/kijai/ComfyUI-KJNodes)
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Acknowledgements
-
-* fal.ai for providing the IClightV2 API
-* ComfyUI for the extensible UI framework 
+* lllyasviel for the [IC-Light model](https://github.com/lllyasviel/IC-Light) 
+* comfyanonymus for bringing us [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
+* behzad kazemi for the [Photo](https://www.pexels.com/photo/charming-calico-cat-on-a-sunlit-lawn-31684129/) used in the example workflow
+* fal.ai for providing the [API endpoint](https://fal.ai/models/fal-ai/iclight-v2/api)

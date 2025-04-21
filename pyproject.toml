@@ -1,0 +1,15 @@
+[project]
+name = "ComfyUI_IC-Light-v2_fal"
+description = "ComfyUI custom node using the fal.ai API for the IC-Light V2 model"
+readme = "README.md"
+version = "0.1.0"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/a-und-b/ComfyUI_IC-Light-v2_fal"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = "a-und-b"
+DisplayName = "IC-Light V2 (fal.ai)"
+Icon = ""
