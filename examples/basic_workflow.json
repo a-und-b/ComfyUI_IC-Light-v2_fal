@@ -1,22 +1,27 @@
 {
-  "last_node_id": 3,
-  "last_link_id": 2,
+  "last_node_id": 5,
+  "last_link_id": 5,
   "nodes": [
     {
       "id": 1,
       "type": "IcLightV2 (fal.ai)",
       "pos": [
-        300,
+        500,
         200
       ],
       "size": {
-        "0": 300,
-        "1": 300
+        "0": 315,
+        "1": 545
       },
       "flags": {},
-      "order": 0,
+      "order": 1,
       "mode": 0,
       "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 1
+        },
         {
           "name": "prompt",
           "type": "STRING",
@@ -48,21 +53,21 @@
           "slot_index": 1
         },
         {
-          "name": "image_size",
-          "type": "COMBO",
+          "name": "num_inference_steps",
+          "type": "INT",
           "link": null,
           "widget": {
-            "name": "image_size",
+            "name": "num_inference_steps",
             "config": [
-              "square_hd",
-              "portrait_hd",
-              "landscape_hd",
-              "square",
-              "portrait",
-              "landscape"
+              "INT",
+              {
+                "default": 28,
+                "min": 1,
+                "max": 100,
+                "step": 1
+              }
             ]
-          },
-          "slot_index": 2
+          }
         },
         {
           "name": "guidance_scale",
@@ -73,32 +78,13 @@
             "config": [
               "FLOAT",
               {
-                "default": 7.5,
+                "default": 5.0,
                 "min": 1.0,
                 "max": 20.0,
                 "step": 0.1
               }
             ]
-          },
-          "slot_index": 3
-        },
-        {
-          "name": "num_inference_steps",
-          "type": "INT",
-          "link": null,
-          "widget": {
-            "name": "num_inference_steps",
-            "config": [
-              "INT",
-              {
-                "default": 50,
-                "min": 1,
-                "max": 100,
-                "step": 1
-              }
-            ]
-          },
-          "slot_index": 4
+          }
         },
         {
           "name": "seed",
@@ -114,8 +100,82 @@
                 "max": 2147483647
               }
             ]
-          },
-          "slot_index": 5
+          }
+        },
+        {
+          "name": "initial_latent",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "initial_latent",
+            "config": [
+              "None",
+              "Left",
+              "Right",
+              "Top",
+              "Bottom"
+            ]
+          }
+        },
+        {
+          "name": "enable_hr_fix",
+          "type": "BOOLEAN",
+          "link": null,
+          "widget": {
+            "name": "enable_hr_fix",
+            "config": ["BOOLEAN", {"default": false}]
+          }
+        },
+        {
+          "name": "lowres_denoise",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "lowres_denoise",
+            "config": [
+              "FLOAT",
+              {
+                "default": 0.98,
+                "min": 0.0,
+                "max": 1.0,
+                "step": 0.01
+              }
+            ]
+          }
+        },
+        {
+          "name": "highres_denoise",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "highres_denoise",
+            "config": [
+              "FLOAT",
+              {
+                "default": 0.95,
+                "min": 0.0,
+                "max": 1.0,
+                "step": 0.01
+              }
+            ]
+          }
+        },
+        {
+          "name": "hr_downscale",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "hr_downscale",
+            "config": [
+              "FLOAT",
+              {
+                "default": 0.5,
+                "min": 0.1,
+                "max": 0.9,
+                "step": 0.01
+              }
+            ]
+          }
         },
         {
           "name": "num_images",
@@ -132,8 +192,41 @@
                 "step": 1
               }
             ]
-          },
-          "slot_index": 6
+          }
+        },
+        {
+          "name": "cfg",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "cfg",
+            "config": [
+              "FLOAT",
+              {
+                "default": 1.0,
+                "min": 0.0,
+                "max": 30.0,
+                "step": 0.1
+              }
+            ]
+          }
+        },
+        {
+          "name": "output_format",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "output_format",
+            "config": [
+              "jpeg",
+              "png"
+            ]
+          }
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": null
         }
       ],
       "outputs": [
@@ -142,8 +235,8 @@
           "type": "IMAGE",
           "links": [
             {
-              "id": 1,
-              "node_id": 2,
+              "id": 2,
+              "node_id": 3,
               "slot_index": 0
             }
           ],
@@ -151,43 +244,98 @@
         }
       ],
       "properties": {
-        "prompt": "a beautiful landscape with mountains and a lake, hyperrealistic photography",
-        "negative_prompt": "ugly, distorted, low quality",
-        "image_size": "landscape_hd",
-        "guidance_scale": 7.5,
-        "num_inference_steps": 30,
+        "prompt": "perfume bottle in a volcano surrounded by lava",
+        "negative_prompt": "blurry, low quality",
+        "num_inference_steps": 28,
+        "guidance_scale": 5.0,
         "seed": 42,
-        "num_images": 1
+        "initial_latent": "None",
+        "enable_hr_fix": false,
+        "lowres_denoise": 0.98,
+        "highres_denoise": 0.95,
+        "hr_downscale": 0.5,
+        "num_images": 1,
+        "cfg": 1.0,
+        "output_format": "jpeg"
       },
       "widgets_values": [
-        "a beautiful landscape with mountains and a lake, hyperrealistic photography",
-        "ugly, distorted, low quality",
-        "landscape_hd",
-        7.5,
-        30,
+        "perfume bottle in a volcano surrounded by lava",
+        "blurry, low quality",
+        28,
+        5.0,
         42,
-        1
+        "None",
+        false,
+        0.98,
+        0.95,
+        0.5,
+        1,
+        1.0,
+        "jpeg"
       ]
     },
     {
       "id": 2,
-      "type": "PreviewImage",
+      "type": "LoadImage",
       "pos": [
-        650,
+        200,
         200
       ],
       "size": {
         "0": 210,
-        "1": 210
+        "1": 246
       },
       "flags": {},
-      "order": 1,
+      "order": 0,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            {
+              "id": 1,
+              "node_id": 1,
+              "slot_index": 0
+            }
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "filename": "example_input.jpg",
+        "show_preview": true
+      },
+      "widgets_values": [
+        "example_input.jpg",
+        "image"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "PreviewImage",
+      "pos": [
+        850,
+        200
+      ],
+      "size": {
+        "0": 210,
+        "1": 246
+      },
+      "flags": {},
+      "order": 2,
       "mode": 0,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 1
+          "link": 2
         }
       ],
       "properties": {}
@@ -196,9 +344,17 @@
   "links": [
     [
       1,
+      2,
+      0,
       1,
       0,
+      "IMAGE"
+    ],
+    [
       2,
+      1,
+      0,
+      3,
       0,
       "IMAGE"
     ]

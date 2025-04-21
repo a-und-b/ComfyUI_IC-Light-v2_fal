@@ -1,11 +1,13 @@
 # ComfyUI-IC-Light-v2-fal
 
-Custom node for ComfyUI to integrate the fal.ai IClightV2 API.
+Custom node for ComfyUI to integrate the fal.ai IClightV2 API - a powerful image relighting and background replacement tool.
 
 ## Features
 
-* Text-to-image generation using fal.ai's IClightV2 model
-* Customizable generation parameters (image size, guidance scale, etc.)
+* Image relighting using fal.ai's IClightV2 model
+* Change lighting conditions of objects in your images
+* Optional mask support for targeted effects
+* Customizable generation parameters (lighting direction, denoise strength, etc.)
 * Multiple image generation in a single request
 * Seed support for reproducible results
 
@@ -41,17 +43,34 @@ pip install -r requirements.txt
 
 ## Usage
 
-After installation, you'll find the "IClightV2 (fal.ai)" node in the ComfyUI interface. Connect it to your workflow to generate images using the IClightV2 model via fal.ai.
+After installation, you'll find the "IClightV2 (fal.ai)" node in the ComfyUI interface under the "image effects/lighting" category. Connect an input image to relight or change its background based on your prompt.
 
 ### Parameters
 
-- **prompt**: Text prompt for image generation
+- **image**: Input image to be relit
+- **prompt**: Text prompt describing the desired lighting or background
 - **negative_prompt**: Negative prompt to guide the model away from certain concepts
-- **image_size**: Output image size (square, portrait, landscape variants)
-- **guidance_scale**: Higher values enforce the prompt more strictly
 - **num_inference_steps**: Number of denoising steps (impacts generation time and quality)
+- **guidance_scale**: Higher values enforce the prompt more strictly
 - **seed**: Random seed for reproducible results
-- **num_images**: Number of images to generate
+- **initial_latent**: Lighting direction - None, Left, Right, Top, or Bottom
+- **enable_hr_fix**: Enable high-resolution fix for better quality
+- **lowres_denoise**: Strength for low-resolution pass
+- **highres_denoise**: Strength for high-resolution pass (used with HR fix)
+- **hr_downscale**: Downscale factor for high-resolution pass
+- **num_images**: Number of variations to generate
+- **cfg**: Classifier-Free Guidance scale for generation
+- **output_format**: Output image format (JPEG or PNG)
+- **mask** (optional): Mask to target specific areas of the image
+
+## Example Workflow
+
+The basic workflow for using the IClightV2 node:
+
+1. Load an image using a ComfyUI image loader node
+2. Connect the image to the IClightV2 node
+3. Set your prompt and parameters
+4. Connect the output to a Preview or Save node
 
 ## License
 

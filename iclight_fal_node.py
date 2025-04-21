@@ -6,6 +6,7 @@ import configparser
 import uuid
 import requests
 import numpy as np
+import base64
 from io import BytesIO
 from PIL import Image
 
@@ -24,7 +25,7 @@ IC_LIGHT_V2_MODEL_ID = "fal-ai/iclight-v2"
 
 class IcLightV2Node:
     """
-    ComfyUI node for generating images using fal.ai's IClightV2 model
+    ComfyUI node for relighting images using fal.ai's IClightV2 model
     """
     
     def __init__(self):
@@ -66,54 +67,113 @@ class IcLightV2Node:
         """Define the input parameters for the node"""
         return {
             "required": {
+                "image": ("IMAGE",),
                 "prompt": ("STRING", {"default": "", "multiline": True}),
                 "negative_prompt": ("STRING", {"default": "", "multiline": True}),
-                "image_size": (["square_hd", "portrait_hd", "landscape_hd", "square", "portrait", "landscape"], {"default": "square_hd"}),
-                "guidance_scale": ("FLOAT", {"default": 7.5, "min": 1.0, "max": 20.0, "step": 0.1}),
-                "num_inference_steps": ("INT", {"default": 50, "min": 1, "max": 100, "step": 1}),
+                "num_inference_steps": ("INT", {"default": 28, "min": 1, "max": 100, "step": 1}),
+                "guidance_scale": ("FLOAT", {"default": 5.0, "min": 1.0, "max": 20.0, "step": 0.1}),
                 "seed": ("INT", {"default": -1, "min": -1, "max": 2147483647}),
+                "initial_latent": (["None", "Left", "Right", "Top", "Bottom"], {"default": "None"}),
+                "enable_hr_fix": ("BOOLEAN", {"default": False}),
+                "lowres_denoise": ("FLOAT", {"default": 0.98, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "highres_denoise": ("FLOAT", {"default": 0.95, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "hr_downscale": ("FLOAT", {"default": 0.5, "min": 0.1, "max": 0.9, "step": 0.01}),
                 "num_images": ("INT", {"default": 1, "min": 1, "max": 4, "step": 1}),
+                "cfg": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 30.0, "step": 0.1}),
+                "output_format": (["jpeg", "png"], {"default": "jpeg"}),
             },
-            "optional": {}
+            "optional": {
+                "mask": ("MASK",),
+            }
         }
     
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("images",)
-    FUNCTION = "generate"
-    CATEGORY = "image generation"
+    FUNCTION = "relight"
+    CATEGORY = "image effects/lighting"
     
-    def generate(self, prompt, negative_prompt, image_size, guidance_scale, num_inference_steps, seed, num_images):
-        """Generate images using fal.ai's IClightV2 model"""
+    def _pil_to_base64(self, pil_image, format="JPEG", quality=95):
+        """Convert PIL image to base64 data URI"""
+        buffered = BytesIO()
+        pil_image.save(buffered, format=format, quality=quality)
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        return f"data:image/{format.lower()};base64,{img_str}"
+    
+    def _create_temp_image(self, image_array, format="JPEG"):
+        """Create a temporary image file from a numpy array"""
+        # Convert array to PIL Image
+        img = Image.fromarray((image_array * 255).astype(np.uint8))
+        
+        # Create temp file
+        fd, file_path = tempfile.mkstemp(suffix=f".{format.lower()}")
+        os.close(fd)
+        self.temp_files.append(file_path)  # For cleanup later
+        
+        # Save image
+        img.save(file_path, format=format, quality=95)
+        return file_path
+    
+    def relight(self, image, prompt, negative_prompt, num_inference_steps, guidance_scale, seed, 
+                initial_latent, enable_hr_fix, lowres_denoise, highres_denoise, hr_downscale, 
+                num_images, cfg, output_format, mask=None):
+        """Relight images using fal.ai's IClightV2 model"""
         
         if not self.api_key:
             raise ValueError("No FAL API key found. Please set it in config.ini or as FAL_KEY environment variable.")
+        
+        # Convert the input image from ComfyUI's format (numpy array) to a file or data URI
+        input_img_format = "PNG" if output_format.lower() == "png" else "JPEG"
+        input_image_path = self._create_temp_image(image[0], format=input_img_format)
         
         # Set up API request parameters
         request_params = {
             "prompt": prompt,
             "negative_prompt": negative_prompt,
-            "image_size": image_size,
-            "guidance_scale": guidance_scale,
             "num_inference_steps": num_inference_steps,
-            "num_images": num_images
+            "guidance_scale": guidance_scale,
+            "initial_latent": initial_latent,
+            "enable_hr_fix": enable_hr_fix,
+            "lowres_denoise": lowres_denoise,
+            "highres_denoise": highres_denoise,
+            "hr_downscale": hr_downscale,
+            "num_images": num_images,
+            "cfg": cfg,
+            "output_format": output_format,
         }
         
         # Add seed if provided (not -1)
         if seed != -1:
             request_params["seed"] = seed
         
+        # Upload the input image to fal.ai
         try:
+            input_image_url = fal_client.upload_file(input_image_path)
+            request_params["image_url"] = input_image_url
+            
+            # If mask is provided, create and upload it too
+            if mask is not None:
+                mask_image_path = self._create_temp_image(mask, format=input_img_format)
+                mask_image_url = fal_client.upload_file(mask_image_path)
+                request_params["mask_image_url"] = mask_image_url
+            
             # Make API request
             print(f"Sending request to fal.ai IClightV2 API with params: {request_params}")
             
-            handler = fal_client.submit(
+            # Define callback for logs
+            def on_queue_update(update):
+                if hasattr(update, 'logs'):
+                    for log in update.logs:
+                        print(f"IClightV2 API: {log.get('message', '')}")
+            
+            # Submit request with logs
+            result = fal_client.subscribe(
                 IC_LIGHT_V2_MODEL_ID,
                 arguments=request_params,
+                with_logs=True,
+                on_queue_update=on_queue_update,
             )
             
-            # Get results
-            result = handler.get()
-            print(f"Received response from fal.ai")
+            print(f"Received response from fal.ai IClightV2")
             
             # Process images
             images = []
@@ -137,7 +197,7 @@ class IcLightV2Node:
                     img = img.convert('RGB')
                 
                 # Save locally
-                filename = f"iclight_v2_{uuid.uuid4()}.png"
+                filename = f"iclight_v2_{uuid.uuid4()}.{output_format}"
                 save_path = os.path.join(self.output_dir, filename)
                 img.save(save_path)
                 
@@ -155,6 +215,15 @@ class IcLightV2Node:
         except Exception as e:
             print(f"Error generating images with IClightV2: {str(e)}")
             raise
+        finally:
+            # Clean up temporary files
+            for temp_file in self.temp_files:
+                try:
+                    if os.path.exists(temp_file):
+                        os.unlink(temp_file)
+                except Exception as e:
+                    print(f"Error cleaning up temp file {temp_file}: {str(e)}")
+            self.temp_files = []
     
     def __del__(self):
         """Clean up any temporary files"""
