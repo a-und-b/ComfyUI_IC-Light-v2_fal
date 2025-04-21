@@ -109,6 +109,10 @@ class IcLightV2Node:
         # Convert array to PIL Image
         img = Image.fromarray((image_array * 255).astype(np.uint8))
         
+        # Convert to RGB if saving as JPEG (JPEG doesn't support alpha channel)
+        if format.upper() == "JPEG" and img.mode == "RGBA":
+            img = img.convert("RGB")
+        
         # Create temp file
         fd, file_path = tempfile.mkstemp(suffix=f".{format.lower()}")
         os.close(fd)
@@ -197,9 +201,12 @@ class IcLightV2Node:
                 
                 # Load image
                 img = Image.open(BytesIO(response.content))
+                
                 # Convert to RGB if needed
-                if img.mode != 'RGB':
-                    img = img.convert('RGB')
+                if img.mode == "RGBA" and output_format.lower() == "jpeg":
+                    img = img.convert("RGB")
+                elif img.mode not in ["RGB", "RGBA"]:
+                    img = img.convert("RGB")
                 
                 # Save locally
                 filename = f"iclight_v2_{uuid.uuid4()}.{output_format}"
