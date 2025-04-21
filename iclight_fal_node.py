@@ -272,6 +272,8 @@ class IcLightV2Node:
             # Stack images for ComfyUI output format
             if images:
                 output_images = np.stack(images)
+                # Convert numpy array to torch tensor for ComfyUI compatibility
+                output_images = torch.from_numpy(output_images)
                 return (output_images,)
             else:
                 raise ValueError("No images were generated or could be processed")
