@@ -9,6 +9,7 @@ import numpy as np
 import base64
 from io import BytesIO
 from PIL import Image
+import torch
 
 import folder_paths
 from comfy.model_management import get_torch_device
@@ -100,7 +101,11 @@ class IcLightV2Node:
         return f"data:image/{format.lower()};base64,{img_str}"
     
     def _create_temp_image(self, image_array, format="JPEG"):
-        """Create a temporary image file from a numpy array"""
+        """Create a temporary image file from a numpy array or torch tensor"""
+        # Convert tensor to numpy array if it's a tensor
+        if isinstance(image_array, torch.Tensor):
+            image_array = image_array.cpu().numpy()
+        
         # Convert array to PIL Image
         img = Image.fromarray((image_array * 255).astype(np.uint8))
         
