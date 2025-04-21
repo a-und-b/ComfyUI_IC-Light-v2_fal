@@ -4,6 +4,7 @@ description = "ComfyUI custom node using the fal.ai API for the IC-Light V2 mode
 readme = "README.md"
 version = "0.1.0"
 license = {file = "LICENSE"}
+dependencies  = [] # Filled in from requirements.txt
 
 [project.urls]
 Repository = "https://github.com/a-und-b/ComfyUI_IC-Light-v2_fal"
