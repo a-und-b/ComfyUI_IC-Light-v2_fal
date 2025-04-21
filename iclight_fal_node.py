@@ -122,6 +122,56 @@ class IcLightV2Node:
         img.save(file_path, format=format, quality=95)
         return file_path
     
+    def _create_temp_mask(self, mask_array, format="PNG"):
+        """Create a temporary mask file from a numpy array or torch tensor
+        ComfyUI masks have a different format than regular images.
+        """
+        # Always use PNG for masks as it's better suited for masks
+        format = "PNG"
+        
+        # Convert tensor to numpy array if it's a tensor
+        if isinstance(mask_array, torch.Tensor):
+            mask_array = mask_array.cpu().numpy()
+        
+        # Debug information to understand the mask shape
+        print(f"Raw mask shape: {mask_array.shape}, dtype: {mask_array.dtype}")
+        
+        # Handle special ComfyUI mask format - reshape and convert as needed
+        # Masks are typically single channel with values between 0 and 1
+        if len(mask_array.shape) == 3 and mask_array.shape[0] == 1:
+            # First dimension is batch, remove it if it's 1
+            mask_array = mask_array[0]
+            print(f"After batch removal: {mask_array.shape}")
+        
+        # Handle masks that are (1, H, W)
+        if len(mask_array.shape) == 3 and mask_array.shape[0] == 1:
+            mask_array = mask_array[0]
+            print(f"After channel removal: {mask_array.shape}")
+        
+        # Ensure mask is 2D for proper PIL handling
+        if len(mask_array.shape) == 1:
+            # Handle linear mask by assuming it's a square
+            size = int(np.sqrt(mask_array.shape[0]))
+            mask_array = mask_array.reshape(size, size)
+            print(f"After reshaping: {mask_array.shape}")
+        
+        # Convert to 8-bit (0-255 range) for image saving
+        try:
+            mask_img = Image.fromarray((mask_array * 255).astype(np.uint8), mode='L')
+        except Exception as e:
+            print(f"Error creating mask image: {str(e)}")
+            print(f"Mask array shape: {mask_array.shape}, min: {mask_array.min()}, max: {mask_array.max()}, dtype: {mask_array.dtype}")
+            raise
+        
+        # Create temp file
+        fd, file_path = tempfile.mkstemp(suffix=".png")
+        os.close(fd)
+        self.temp_files.append(file_path)  # For cleanup later
+        
+        # Save image
+        mask_img.save(file_path, format="PNG")
+        return file_path
+    
     def relight(self, image, prompt, negative_prompt, num_inference_steps, guidance_scale, seed, 
                 initial_latent, enable_hr_fix, lowres_denoise, highres_denoise, hr_downscale, 
                 num_images, cfg, output_format, mask=None):
@@ -161,7 +211,9 @@ class IcLightV2Node:
             
             # If mask is provided, create and upload it too
             if mask is not None:
-                mask_image_path = self._create_temp_image(mask, format=input_img_format)
+                print(f"Processing mask with shape: {mask.shape} and type: {mask.dtype}")
+                # Masks should always be saved as PNG regardless of output format
+                mask_image_path = self._create_temp_mask(mask)
                 mask_image_url = fal_client.upload_file(mask_image_path)
                 request_params["mask_image_url"] = mask_image_url
             
