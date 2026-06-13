@@ -2,7 +2,7 @@
 name = "ComfyUI_IC-Light-v2_fal"
 description = "ComfyUI custom node using the fal.ai API for the IC-Light V2 model"
 readme = "README.md"
-version = "0.1.0"
+version = "0.1.1"
 license = {file = "LICENSE"}
 dependencies  = [] # Filled in from requirements.txt
 
