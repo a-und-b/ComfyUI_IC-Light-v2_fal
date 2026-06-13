@@ -17,6 +17,13 @@ from comfy.model_management import get_torch_device
 # FAL.AI API INTEGRATION
 try:
     import fal_client
+    # `fal_client.subscribe` is only available as a top-level function from
+    # fal-client 0.5.0 onwards. Older installs raise a confusing
+    # "module 'fal_client' has no attribute 'subscribe'" at runtime, so we
+    # surface a clear, actionable message here instead.
+    if not hasattr(fal_client, "subscribe"):
+        print("Warning: your 'fal-client' version is too old (need >=0.5.0).")
+        print("Please upgrade with: pip install -U 'fal-client>=0.5.0'")
 except ImportError:
     print("Warning: fal_client not installed!")
     print("Please install dependencies with: pip install -r requirements.txt")
