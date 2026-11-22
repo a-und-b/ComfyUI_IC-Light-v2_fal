@@ -14,3 +14,8 @@ Repository = "https://github.com/a-und-b/ComfyUI_IC-Light-v2_fal"
 PublisherId = "a-und-b"
 DisplayName = "IC-Light V2 (fal.ai)"
 Icon = ""
+[tool.pytest.ini_options]
+# The repo dir name has hyphens, so pytest cannot import the package
+# __init__.py; stop its parent walk at tests/.
+testpaths = ["tests"]
+addopts = "--confcutdir=tests"

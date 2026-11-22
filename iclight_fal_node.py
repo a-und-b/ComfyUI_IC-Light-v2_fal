@@ -17,19 +17,25 @@ from comfy.model_management import get_torch_device
 # FAL.AI API INTEGRATION
 try:
     import fal_client
-    # `fal_client.subscribe` is only available as a top-level function from
-    # fal-client 0.5.0 onwards. Older installs raise a confusing
-    # "module 'fal_client' has no attribute 'subscribe'" at runtime, so we
-    # surface a clear, actionable message here instead.
-    if not hasattr(fal_client, "subscribe"):
-        print("Warning: your 'fal-client' version is too old (need >=0.5.0).")
-        print("Please upgrade with: pip install -U 'fal-client>=0.5.0'")
 except ImportError:
+    fal_client = None
     print("Warning: fal_client not installed!")
     print("Please install dependencies with: pip install -r requirements.txt")
 
 # Model ID for IClightV2 on fal.ai
 IC_LIGHT_V2_MODEL_ID = "fal-ai/iclight-v2"
+
+
+def _build_fal_client(api_key):
+    """Return a per-instance fal SyncClient (key scoped to this node), or None."""
+    if fal_client is None or not api_key:
+        return None
+    if hasattr(fal_client, "SyncClient"):
+        return fal_client.SyncClient(key=api_key)
+    print("Warning: your 'fal-client' version is too old (need >=0.5.0).")
+    print("Please upgrade with: pip install -U 'fal-client>=0.5.0'")
+    return None
+
 
 class IcLightV2Node:
     """
@@ -41,10 +47,7 @@ class IcLightV2Node:
         self.config = self._load_config()
         self.api_key = self._get_api_key()
         self.temp_files = []
-        
-        # Configure the FAL client if API key is present
-        if self.api_key:
-            os.environ["FAL_KEY"] = self.api_key
+        self._fal = _build_fal_client(self.api_key)
     
     def _load_config(self):
         """Load configuration from config.ini"""
@@ -60,14 +63,12 @@ class IcLightV2Node:
             return config
     
     def _get_api_key(self):
-        """Get API key from config or environment variable"""
-        # Check environment variable first
-        api_key = os.environ.get("FAL_KEY", None)
-        
-        # If not in environment, try config
+        """Resolve API key: FAL_KEY env wins, then config.ini (unchanged order)."""
+        api_key = os.environ.get("FAL_KEY") or None
         if not api_key and "falai" in self.config and "api_key" in self.config["falai"]:
             api_key = self.config["falai"]["api_key"]
-            
+        if isinstance(api_key, str):
+            api_key = api_key.strip() or None
         return api_key
     
     @classmethod
@@ -184,8 +185,12 @@ class IcLightV2Node:
                 num_images, cfg, output_format, mask=None):
         """Process input image and return generated images."""
         
-        if not self.api_key:
-            raise ValueError("No FAL API key found. Please set it in config.ini or as FAL_KEY environment variable.")
+        if not self.api_key or self._fal is None:
+            raise ValueError(
+                "No usable fal.ai API key/client. Set the FAL_KEY environment "
+                "variable (or legacy config.ini [falai] api_key) and install "
+                "fal-client>=0.5.0."
+            )
         
         # Convert the input image from ComfyUI's format (numpy array) to a file or data URI
         input_img_format = "PNG" if output_format.lower() == "png" else "JPEG"
@@ -211,9 +216,9 @@ class IcLightV2Node:
         if seed != -1:
             request_params["seed"] = seed
         
-        # Upload the input image to fal.ai
+        # Upload the input image to fal.ai (per-instance client, scoped key)
         try:
-            input_image_url = fal_client.upload_file(input_image_path)
+            input_image_url = self._fal.upload_file(input_image_path)
             request_params["image_url"] = input_image_url
             
             # If mask is provided, create and upload it too
@@ -221,7 +226,7 @@ class IcLightV2Node:
                 print(f"Processing mask with shape: {mask.shape} and type: {mask.dtype}")
                 # Masks should always be saved as PNG regardless of output format
                 mask_image_path = self._create_temp_mask(mask)
-                mask_image_url = fal_client.upload_file(mask_image_path)
+                mask_image_url = self._fal.upload_file(mask_image_path)
                 request_params["mask_image_url"] = mask_image_url
             
             # Make API request
@@ -234,7 +239,7 @@ class IcLightV2Node:
                         print(f"IClightV2 API: {log.get('message', '')}")
             
             # Submit request with logs
-            result = fal_client.subscribe(
+            result = self._fal.subscribe(
                 IC_LIGHT_V2_MODEL_ID,
                 arguments=request_params,
                 with_logs=True,
