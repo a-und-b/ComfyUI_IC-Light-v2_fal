@@ -4,7 +4,12 @@ description = "ComfyUI custom node using the fal.ai API for the IC-Light V2 mode
 readme = "README.md"
 version = "0.1.1"
 license = {file = "LICENSE"}
-dependencies  = [] # Filled in from requirements.txt
+dependencies = [
+    "fal-client>=0.5.0",
+    "configparser>=5.0.0",
+    "requests>=2.25.0",
+    "pillow>=9.0.0",
+]
 
 [project.urls]
 Repository = "https://github.com/a-und-b/ComfyUI_IC-Light-v2_fal"
@@ -14,6 +19,7 @@ Repository = "https://github.com/a-und-b/ComfyUI_IC-Light-v2_fal"
 PublisherId = "a-und-b"
 DisplayName = "IC-Light V2 (fal.ai)"
 Icon = ""
+
 [tool.pytest.ini_options]
 # The repo dir name has hyphens, so pytest cannot import the package
 # __init__.py; stop its parent walk at tests/.
