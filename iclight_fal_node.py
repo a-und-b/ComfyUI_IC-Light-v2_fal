@@ -100,6 +100,10 @@ class IcLightV2Node:
     RETURN_NAMES = ("images",)
     FUNCTION = "relight"
     CATEGORY = "image effects/lighting"
+    DESCRIPTION = (
+        "Relight an image and change its background via fal.ai's IC-Light V2 API. "
+        "Set the FAL_KEY environment variable (config.ini still works)."
+    )
     
     def _pil_to_base64(self, pil_image, format="JPEG", quality=95):
         """Convert PIL image to base64 data URI"""

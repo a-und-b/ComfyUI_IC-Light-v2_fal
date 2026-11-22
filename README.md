@@ -2,7 +2,7 @@
 
 Custom node for [ComfyUI](https://github.com/comfyanonymous/ComfyUI) that integrates [lllyasviel's IC-Light V2 model](https://github.com/lllyasviel/IC-Light/discussions/98) into your workflows using the [fal.ai API](https://fal.ai/models/fal-ai/iclight-v2/api).
 
-![Example Workflow](example_workflows/iclv2-example-workflow.png)
+![Example workflow](example_workflows/iclv2-example-workflow.png)
 
 ## Features
 
@@ -15,6 +15,17 @@ Custom node for [ComfyUI](https://github.com/comfyanonymous/ComfyUI) that integr
 
 * ComfyUI installed and set up
 * fal.ai account and API key
+* `fal-client>=0.5.0` (pulled in via `requirements.txt` / `pyproject.toml`)
+
+## API key
+
+Set your [fal.ai API key](https://fal.ai/dashboard/keys) as an environment variable before starting ComfyUI:
+
+```bash
+export FAL_KEY=your_fal_key
+```
+
+Existing `config.ini` setups (`[falai] api_key=…`) remain supported for backward compatibility; `FAL_KEY` takes precedence when both are set.
 
 ## Installation
 You can install this custom node using the ComfyUI Manager or manually.
@@ -24,6 +35,7 @@ You can install this custom node using the ComfyUI Manager or manually.
 2. Open ComfyUI and click the "Manager" button.
 3. Search for "ComfyUI_IC-Light-v2_fal" in the custom nodes section.
 4. Click "Install" to automatically download and install the custom nodes.
+5. Set your API key (see [API key](#api-key) above), then restart ComfyUI.
 
 ### Install manually
 
@@ -43,9 +55,7 @@ cd ComfyUI_IC-Light-v2_fal
 pip install -r requirements.txt
 ```
 
-4. Configure your API key:
-   - Copy `config.ini.template` to `config.ini` in the root directory of this custom node (`ComfyUI/custom_nodes/ComfyUI_IC-Light-v2_fal`).
-   - Add your [fal.ai API key](https://fal.ai/dashboard/keys) to the `config.ini` file 
+4. Configure your API key (see [API key](#api-key) above).
    
 5. Restart ComfyUI if it's already running
 
@@ -71,11 +81,11 @@ After installation, you'll find the "IC-Light V2 (fal.ai)" node in the ComfyUI i
 - **output_format**: Output image format (JPEG or PNG)
 - **mask** (optional): Mask to target specific areas of the image
 
-## Example Workflow
+## Example workflow
 
-You can load the JSON file from the `example_workflows` folder directly into ComfyUI (e.g., by dragging and dropping the file onto the ComfyUI window or using the 'Load' button).
+Load [`example_workflows/iclv2-example-workflow.json`](example_workflows/iclv2-example-workflow.json) into ComfyUI (drag-and-drop onto the canvas, or use **Load**). Fullscreen preview: [`example_workflows/iclv2-example-workflow.png`](example_workflows/iclv2-example-workflow.png).
 
-This workflow incorporates custom nodes from the following widely used extension packages:
+This workflow also uses nodes from:
 * [ComfyUI-Easy-Use](https://github.com/yolain/ComfyUI-Easy-Use)
 * [ComfyUI-KJNodes](https://github.com/kijai/ComfyUI-KJNodes)
 
