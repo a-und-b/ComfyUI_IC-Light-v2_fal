@@ -262,7 +262,8 @@ class IcLightV2Node:
                     continue
                 
                 # Download image
-                response = requests.get(img_url)
+                # Result image from fal.ai's CDN; (connect, read) seconds.
+                response = requests.get(img_url, timeout=(10, 60))
                 if response.status_code != 200:
                     print(f"Failed to download image: {response.status_code}")
                     continue

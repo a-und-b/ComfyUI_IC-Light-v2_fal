@@ -35,7 +35,7 @@ class FakeResponse:
 def test_key_scoped_to_client_not_environ(monkeypatch, tmp_path):
     monkeypatch.delenv("FAL_KEY", raising=False)
     monkeypatch.setattr(mod.fal_client, "SyncClient", FakeSyncClient)
-    monkeypatch.setattr(mod.requests, "get", lambda url: FakeResponse())
+    monkeypatch.setattr(mod.requests, "get", lambda url, timeout: FakeResponse())  # timeout required
     cfg = configparser.ConfigParser()
     cfg["falai"] = {"api_key": " config-key "}
     monkeypatch.setattr(mod.IcLightV2Node, "_load_config", lambda self: cfg)
