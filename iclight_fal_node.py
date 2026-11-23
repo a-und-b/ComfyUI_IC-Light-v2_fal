@@ -76,30 +76,31 @@ class IcLightV2Node:
         """Define the input parameters for the node"""
         return {
             "required": {
-                "image": ("IMAGE",),
-                "prompt": ("STRING", {"default": "", "multiline": True}),
-                "negative_prompt": ("STRING", {"default": "", "multiline": True}),
-                "num_inference_steps": ("INT", {"default": 28, "min": 1, "max": 100, "step": 1}),
-                "guidance_scale": ("FLOAT", {"default": 5.0, "min": 1.0, "max": 20.0, "step": 0.1}),
-                "seed": ("INT", {"default": -1, "min": -1, "max": 2147483647}),
-                "initial_latent": (["None", "Left", "Right", "Top", "Bottom"], {"default": "None"}),
-                "enable_hr_fix": ("BOOLEAN", {"default": False}),
-                "lowres_denoise": ("FLOAT", {"default": 0.98, "min": 0.0, "max": 1.0, "step": 0.01}),
-                "highres_denoise": ("FLOAT", {"default": 0.95, "min": 0.0, "max": 1.0, "step": 0.01}),
-                "hr_downscale": ("FLOAT", {"default": 0.5, "min": 0.1, "max": 0.9, "step": 0.01}),
-                "num_images": ("INT", {"default": 1, "min": 1, "max": 4, "step": 1}),
-                "cfg": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 30.0, "step": 0.1}),
-                "output_format": (["jpeg", "png"], {"default": "jpeg"}),
+                "image": ("IMAGE", {"tooltip": "Subject to relight; works best with the background removed"}),
+                "prompt": ("STRING", {"default": "", "multiline": True, "tooltip": "New light and background, e.g. 'at the beach, golden hour'"}),
+                "negative_prompt": ("STRING", {"default": "", "multiline": True, "tooltip": "What the result should not show"}),
+                "num_inference_steps": ("INT", {"default": 28, "min": 1, "max": 100, "step": 1, "tooltip": "More steps: more detail, slower"}),
+                "guidance_scale": ("FLOAT", {"default": 5.0, "min": 1.0, "max": 20.0, "step": 0.1, "tooltip": "How closely the result follows the prompt"}),
+                "seed": ("INT", {"default": -1, "min": -1, "max": 2147483647, "tooltip": "-1 lets fal.ai pick a random seed"}),
+                "initial_latent": (["None", "Left", "Right", "Top", "Bottom"], {"default": "None", "tooltip": "Side the light comes from; None leaves it to the prompt"}),
+                "enable_hr_fix": ("BOOLEAN", {"default": False, "tooltip": "Second pass at higher resolution for more detail"}),
+                "lowres_denoise": ("FLOAT", {"default": 0.98, "min": 0.0, "max": 1.0, "step": 0.01, "tooltip": "Denoise strength of the low-resolution pass"}),
+                "highres_denoise": ("FLOAT", {"default": 0.95, "min": 0.0, "max": 1.0, "step": 0.01, "tooltip": "Denoise strength of the high-resolution pass (only with enable_hr_fix)"}),
+                "hr_downscale": ("FLOAT", {"default": 0.5, "min": 0.1, "max": 0.9, "step": 0.01, "tooltip": "Scale of the low-resolution pass (only with enable_hr_fix)"}),
+                "num_images": ("INT", {"default": 1, "min": 1, "max": 4, "step": 1, "tooltip": "Images per run; each one is billed by fal.ai"}),
+                "cfg": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 30.0, "step": 0.1, "tooltip": "Real CFG scale; 1.0 is the fal.ai default"}),
+                "output_format": (["jpeg", "png"], {"default": "jpeg", "tooltip": "Format fal.ai returns (and the upload uses)"}),
             },
             "optional": {
-                "mask": ("MASK",),
+                "mask": ("MASK", {"tooltip": "Optional: area to relight"}),
             }
         }
     
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("images",)
     FUNCTION = "relight"
-    CATEGORY = "image effects/lighting"
+    CATEGORY = "AB/Image"
+    SEARCH_ALIASES = ["IC-Light V2 (fal.ai)", "relight", "relighting", "change background", "iclight"]
     DESCRIPTION = (
         "Relight an image and change its background via fal.ai's IC-Light V2 API. "
         "Set the FAL_KEY environment variable (config.ini still works)."

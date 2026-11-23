@@ -1,23 +1,68 @@
-# ComfyUI_IC-Light-v2_fal
+<div align="center">
 
-Custom node for [ComfyUI](https://github.com/comfyanonymous/ComfyUI) that integrates [lllyasviel's IC-Light V2 model](https://github.com/lllyasviel/IC-Light/discussions/98) into your workflows using the [fal.ai API](https://fal.ai/models/fal-ai/iclight-v2/api).
+# AB IC-Light V2 (fal.ai): relight photos and swap backgrounds in ComfyUI
 
-![Example workflow](example_workflows/iclv2-example-workflow.png)
+**Describe the light and the place, get your subject relit to match; IC-Light V2 runs on fal.ai, no local GPU needed.**
+
+<br />
+
+[![Star this repo](https://img.shields.io/github/stars/a-und-b/ComfyUI_IC-Light-v2_fal?style=for-the-badge&logo=github&label=Star&color=yellow)](https://github.com/a-und-b/ComfyUI_IC-Light-v2_fal/stargazers)
+&nbsp;
+[![Comfy Registry installs](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.comfy.org%2Fnodes%2FComfyUI_IC-Light-v2_fal&query=%24.downloads&label=registry%20installs&style=for-the-badge&color=5b6cff)](https://registry.comfy.org/nodes/ComfyUI_IC-Light-v2_fal)
+&nbsp;
+[![Comfy Registry version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.comfy.org%2Fnodes%2FComfyUI_IC-Light-v2_fal&query=%24.latest_version.version&label=version&prefix=v&style=for-the-badge&color=333)](https://registry.comfy.org/nodes/ComfyUI_IC-Light-v2_fal)
+&nbsp;
+[![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f?style=for-the-badge)](LICENSE)
+
+<br />
+
+![Load Image feeds AB IC-Light V2 (fal.ai) with a prompt for warm sunset light from the left, into Preview Image](example_workflows/ab-ic-light-relight-on-fal-preview.png)
+
+---
+
+A cut-out subject pasted onto a new background never looks right: the light on the subject comes from somewhere else. [lllyasviel's IC-Light V2](https://github.com/lllyasviel/IC-Light/discussions/98) relights the subject to the scene you describe. This node sends your image to the [fal.ai API](https://fal.ai/models/fal-ai/iclight-v2/api) and returns the result as a ComfyUI image.
+
+[Install](#install) · [Example workflow](#example-workflow) · [Parameters](#parameters) · [Contributing](#contributing)
+
+</div>
+
+---
+
+## Why AB IC-Light V2 (fal.ai)
+
+Running IC-Light V2 locally needs a large GPU and its own model setup. Here it is one node and a fal.ai key. The node makes network calls by design: it uploads the image (and mask) to fal.ai and downloads the result. fal.ai bills every image; see their pricing before you queue batches. Dependencies: `fal-client`, `requests`, `pillow`.
 
 ## Features
 
-* Re-lighting photos and changing their backgrounds based on a given description
-* Use your own native ComfyUI mask as input (optional)
-* Adjustable generation parameters (seed, lighting direction, denoise strength, etc.)
-* Multiple image generation in a single request
+| You want | You use |
+|----------|---------|
+| New light and background from a description | `prompt`, e.g. `at the beach, golden hour` |
+| Light from one side | `initial_latent`: `Left`, `Right`, `Top`, `Bottom` |
+| Only part of the image relit | an optional `mask` |
+| More detail | `enable_hr_fix` with `highres_denoise` and `hr_downscale` |
+| Several variants in one request | `num_images` (1–4) |
 
-## Prerequisites
+## Install
 
-* ComfyUI installed and set up
-* fal.ai account and API key
-* `fal-client>=0.5.0` (pulled in via `requirements.txt` / `pyproject.toml`)
+**ComfyUI Manager:** search for **AB IC-Light V2**, install, set your API key (below), restart ComfyUI.
 
-## API key
+**comfy-cli:**
+
+```bash
+comfy node install ComfyUI_IC-Light-v2_fal
+```
+
+**Manually:**
+
+```bash
+cd ComfyUI/custom_nodes
+git clone https://github.com/a-und-b/ComfyUI_IC-Light-v2_fal.git
+pip install -r ComfyUI_IC-Light-v2_fal/requirements.txt
+```
+
+Restart ComfyUI. The node appears under **AB/Image**; search for `AB IC-Light` or `relight`.
+
+### API key
 
 Set your [fal.ai API key](https://fal.ai/dashboard/keys) as an environment variable before starting ComfyUI:
 
@@ -25,76 +70,55 @@ Set your [fal.ai API key](https://fal.ai/dashboard/keys) as an environment varia
 export FAL_KEY=your_fal_key
 ```
 
-Existing `config.ini` setups (`[falai] api_key=…`) remain supported for backward compatibility; `FAL_KEY` takes precedence when both are set.
-
-## Installation
-You can install this custom node using the ComfyUI Manager or manually.
-
-### Install via ComfyUI Manager
-1. Install [ComfyUI Manager](https://github.com/Comfy-Org/ComfyUI-Manager) if you haven't already.
-2. Open ComfyUI and click the "Manager" button.
-3. Search for "ComfyUI_IC-Light-v2_fal" in the custom nodes section.
-4. Click "Install" to automatically download and install the custom nodes.
-5. Set your API key (see [API key](#api-key) above), then restart ComfyUI.
-
-### Install manually
-
-1. Clone this repository into your ComfyUI's `custom_nodes` directory:
-```
-cd /path/to/ComfyUI/custom_nodes
-git clone https://github.com/a-und-b/ComfyUI_IC-Light-v2_fal.git
-```
-
-2. Navigate to the cloned directory:
-```
-cd ComfyUI_IC-Light-v2_fal
-```
-
-3. Install the required dependencies:
-```
-pip install -r requirements.txt
-```
-
-4. Configure your API key (see [API key](#api-key) above).
-   
-5. Restart ComfyUI if it's already running
-
-## Usage
-
-After installation, you'll find the "IC-Light V2 (fal.ai)" node in the ComfyUI interface. Connect an input image and an optional mask to change the subject's background and lighting based on your prompt.
-
-### Parameters
-
-- **image**: Input image to be relit
-- **prompt**: Text prompt describing the desired lighting or background
-- **negative_prompt**: Negative prompt to guide the model away from certain concepts
-- **num_inference_steps**: Number of denoising steps (impacts generation time and quality)
-- **guidance_scale**: Higher values enforce the prompt more strictly
-- **seed**: Random seed for reproducible results
-- **initial_latent**: Lighting direction - None, Left, Right, Top, or Bottom
-- **enable_hr_fix**: Enable high-resolution fix for better quality
-- **lowres_denoise**: Strength for low-resolution pass
-- **highres_denoise**: Strength for high-resolution pass (used with HR fix)
-- **hr_downscale**: Downscale factor for high-resolution pass
-- **num_images**: Number of variations to generate
-- **cfg**: Classifier-Free Guidance scale for generation
-- **output_format**: Output image format (JPEG or PNG)
-- **mask** (optional): Mask to target specific areas of the image
+Existing `config.ini` setups (`[falai] api_key=…`) still work; `FAL_KEY` wins when both are set.
 
 ## Example workflow
 
-Load [`example_workflows/iclv2-example-workflow.json`](example_workflows/iclv2-example-workflow.json) into ComfyUI (drag-and-drop onto the canvas, or use **Load**). Fullscreen preview: [`example_workflows/iclv2-example-workflow.png`](example_workflows/iclv2-example-workflow.png).
+[`ab-ic-light-relight-on-fal.json`](example_workflows/ab-ic-light-relight-on-fal.json): **Load Image** → **AB IC-Light V2 (fal.ai)** → **Preview Image**, core nodes only. Drag the file onto the canvas, or open it in ComfyUI under Workflow → Browse Templates, under the pack's name. Pick your image in **Load Image** and queue: each run is one paid fal.ai request. The preview above shows the graph before a run.
 
-This workflow also uses nodes from:
-* [ComfyUI-Easy-Use](https://github.com/yolain/ComfyUI-Easy-Use)
-* [ComfyUI-KJNodes](https://github.com/kijai/ComfyUI-KJNodes)
+For best results, remove the background first (any background-removal node) and connect the subject's mask to `mask`.
+
+## Parameters
+
+- `image`: the subject to relight
+- `prompt`: the light and background you want
+- `negative_prompt`: what the result should not show
+- `num_inference_steps`: more steps, more detail, slower
+- `guidance_scale`: how closely the result follows the prompt
+- `seed`: `-1` lets fal.ai pick a random seed
+- `initial_latent`: side the light comes from (`None`, `Left`, `Right`, `Top`, `Bottom`)
+- `enable_hr_fix`: second pass at higher resolution
+- `lowres_denoise`: denoise strength of the low-resolution pass
+- `highres_denoise`: denoise strength of the high-resolution pass (with `enable_hr_fix`)
+- `hr_downscale`: scale of the low-resolution pass (with `enable_hr_fix`)
+- `num_images`: images per run, each billed by fal.ai
+- `cfg`: real CFG scale, 1.0 is the fal.ai default
+- `output_format`: `jpeg` or `png`
+- `mask` (optional): area to relight
+
+Up to 0.1.x the node was called *IC-Light V2 (fal.ai)* under *image effects/lighting*. Search still finds the old name, and saved workflows load unchanged.
+
+## Contributing
+
+Bug reports and pull requests are welcome. Open an [issue](https://github.com/a-und-b/ComfyUI_IC-Light-v2_fal/issues) first for larger changes; [`CONTRIBUTING.md`](CONTRIBUTING.md) has the three steps.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+[MIT](LICENSE)
 
-## Acknowledgements
-* lllyasviel for the [IC-Light model](https://github.com/lllyasviel/IC-Light) 
-* comfyanonymus for bringing us [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
-* behzad kazemi for the [Photo](https://www.pexels.com/photo/charming-calico-cat-on-a-sunlit-lawn-31684129/) used in the example workflow
-* fal.ai for providing the [API endpoint](https://fal.ai/models/fal-ai/iclight-v2/api)
+## Credits
+
+- lllyasviel for the [IC-Light model](https://github.com/lllyasviel/IC-Light)
+- fal.ai for the [API endpoint](https://fal.ai/models/fal-ai/iclight-v2/api)
+
+---
+
+<div align="center">
+
+Built by [Holger Will](https://github.com/a-und-b) at [anders & besser](https://andersundbesser.de)
+
+<br />
+
+[![Star this repo](https://img.shields.io/github/stars/a-und-b/ComfyUI_IC-Light-v2_fal?style=for-the-badge&logo=github&label=Star&color=yellow)](https://github.com/a-und-b/ComfyUI_IC-Light-v2_fal/stargazers)
+
+</div>

@@ -1,8 +1,8 @@
 [project]
 name = "ComfyUI_IC-Light-v2_fal"
-description = "ComfyUI custom node using the fal.ai API for the IC-Light V2 model"
+description = "AB IC-Light V2 (fal.ai): relight a subject and change its background from a text prompt, using IC-Light V2 on the fal.ai API (paid, needs FAL_KEY). Optional mask."
 readme = "README.md"
-version = "0.1.3"
+version = "0.2.0"
 license = {file = "LICENSE"}
 dependencies = [
     "fal-client>=0.5.0",
@@ -17,7 +17,7 @@ Repository = "https://github.com/a-und-b/ComfyUI_IC-Light-v2_fal"
 
 [tool.comfy]
 PublisherId = "a-und-b"
-DisplayName = "IC-Light V2 (fal.ai)"
+DisplayName = "AB IC-Light V2 (fal.ai)"
 Icon = ""
 
 [tool.pytest.ini_options]
