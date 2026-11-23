@@ -1,0 +1,4 @@
+# Left out of the Registry zip (comfy node publish): dev-only files.
+.github/
+tests/
+test.py
